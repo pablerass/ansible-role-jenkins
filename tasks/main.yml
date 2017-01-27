@@ -11,7 +11,23 @@
 - name: "Install Jenkins"
   apt:  name=jenkins
 
-- name: "Start Jenkins service"
+- name: "Disable Jenkins wizard"
+  lineinfile:
+    dest=/etc/default/jenkins
+    insertafter='^JAVA_ARGS='
+    regexp='^JAVA_ARGS=\"\$JAVA_ARGS '
+    line='JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"'
+  register: jenkins_config
+
+- name: "Immediately restart Jenkins service"
   service:
         name=jenkins
-        state=started
+        state=restarted
+  when: jenkins_config.changed
+
+- name: "Configure authentication"
+  lineinfile:
+    dest=/var/lib/jenkins/config.xml
+    regexp='<useSecurity>.*</useSecurity>'
+    line='  <useSecurity>false</useSecurity>'
+  notify: "Jenkins restart"
