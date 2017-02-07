@@ -2,5 +2,8 @@
 # handlers file for jenkins
 - name: "Jenkins restart"
   service:
-        name=jenkins
-        state=restarted
+    name: "jenkins"
+    state: "restarted"
+
+- name: "Jenkins soft restart"
+  shell: java -jar {{jenkins_cli}} -s {{jenkins_url}}/ safe-restart

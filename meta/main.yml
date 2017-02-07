@@ -1,6 +1,6 @@
 galaxy_info:
   author: pablerass
-  description: Installs a basig Jenkins server
+  description: Install a basic Jenkins server
   license: GPLv3
   min_ansible_version: 2.2
   platforms:
