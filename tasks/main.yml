@@ -24,26 +24,13 @@
     line='JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"'
   register: jenkins_config_wizard
 
-- name: "Jenkins config file created"
-  shell: "test -f /var/lib/jenkins/config.xml"
-  register: result
-  until: result.rc == 0
-  retries: 5
-  delay: 60
-  changed_when: false
-
-- name: "Jenkins authentication"
-  lineinfile:
-    dest=/var/lib/jenkins/config.xml
-    regexp='<useSecurity>.*</useSecurity>'
-    line='  <useSecurity>false</useSecurity>'
-  register: jenkins_config_auth
-
 - name: "Immediately restart Jenkins service"
   service:
     name=jenkins
     state=restarted
-  when: jenkins_config_wizard.changed or jenkins_config_auth.changed
+  when: jenkins_config_wizard.changed
+
+- include: config.yml
 
 - name: "Jenkins server started"
   shell: "curl -D - --silent --max-time 5 {{jenkins_url}}/cli/"

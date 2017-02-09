@@ -1,0 +1,27 @@
+---
+- name: "Jenkins config file created"
+  shell: "test -f /var/lib/jenkins/config.xml"
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 60
+  changed_when: false
+
+- name: "Jenkins authentication disabled"
+  lineinfile:
+    dest=/var/lib/jenkins/config.xml
+    regexp='<useSecurity>.*</useSecurity>'
+    line='  <useSecurity>false</useSecurity>'
+  notify: "Jenkins restart"
+
+- name: "Jenkins authentication parameters removed"
+  replace:
+    dest=/var/lib/jenkins/config.xml
+    regexp='\s*<{{item}}[.*\n]*{{item}}>\s*$'
+  with_items:
+    - authorizationStrategy
+    - securityRealm
+  notify: "Jenkins restart"
+
+- name: "Force Jenkins restart"
+  meta: flush_handlers
