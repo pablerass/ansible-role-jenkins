@@ -16,6 +16,11 @@
 
 - include: user.yml
 
+- name: "Jenkins service started"
+  service:
+    name=jenkins
+    state=started
+
 - name: "Disable Jenkins wizard"
   lineinfile:
     dest=/etc/default/jenkins
