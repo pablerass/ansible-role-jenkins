@@ -16,11 +16,6 @@
 
 - include: user.yml
 
-- name: "Jenkins service started"
-  service:
-    name=jenkins
-    state=started
-
 - name: "Disable Jenkins wizard"
   lineinfile:
     dest=/etc/default/jenkins
@@ -28,6 +23,14 @@
     regexp='^JAVA_ARGS=\"\$JAVA_ARGS '
     line='JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"'
   register: jenkins_config_wizard
+
+- name: "Jenkins config file created"
+  shell: "test -f /var/lib/jenkins/config.xml"
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 60
+  changed_when: false
 
 - name: "Jenkins authentication"
   lineinfile:
