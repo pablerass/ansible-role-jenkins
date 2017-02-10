@@ -17,4 +17,8 @@
     creates: "{{jenkins_home}}/plugins/{{item}}.jpi"
   with_items: "{{jenkins_plugins}}"
   ignore_errors: true
-  notify: "Jenkins soft restart"
+  register: jenkins_plugins_install
+
+- name: "Jenkins softly restarted"
+  shell: java -jar {{jenkins_cli}} -s {{jenkins_url}}/ safe-restart
+  when: jenkins_plugins_install.changed
