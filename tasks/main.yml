@@ -23,14 +23,20 @@
     regexp='^JAVA_ARGS=\"\$JAVA_ARGS '
     line='JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"'
   register: jenkins_config_wizard
+  notify: "Jenkins restart"
 
-- name: "Immediately restart Jenkins service"
-  service:
-    name=jenkins
-    state=restarted
-  when: jenkins_config_wizard.changed
+- name: "Jenkins config file created"
+  shell: "test -f /var/lib/jenkins/config.xml"
+  register: result
+  until: result.rc == 0
+  retries: 6
+  delay: 10
+  changed_when: false
 
 - include: config.yml
+
+- name: "Force Jenkins restart"
+  meta: flush_handlers
 
 - name: "Jenkins server started"
   shell: "curl -D - --silent --max-time 5 {{jenkins_url}}/cli/"
@@ -38,8 +44,8 @@
     warn: false
   register: result
   until: (result.stdout.find("403 Forbidden") != -1) or (result.stdout.find("200 OK") != -1) and (result.stdout.find("Please wait while") == -1)
-  retries: 5
-  delay: 60
+  retries: 10
+  delay: 30
   changed_when: false
 
 - name: "Jenkins-cli jarfile"
